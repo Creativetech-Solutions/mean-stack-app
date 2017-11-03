@@ -1,0 +1,95 @@
+<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<script type="text/javascript" charset="utf-8">
+  $(document).ready(function () {
+  var trigger = $('.hamburger'),
+      overlay = $('.overlay'),
+     isClosed = false;
+
+    trigger.click(function () {
+      hamburger_cross();      
+    });
+
+    function hamburger_cross() {
+
+      if (isClosed == true) {          
+        overlay.hide();
+        trigger.removeClass('is-open');
+        trigger.addClass('is-closed');
+        isClosed = false;
+      } else {   
+        overlay.show();
+        trigger.removeClass('is-closed');
+        trigger.addClass('is-open');
+        isClosed = true;
+      }
+  }
+  
+  $('[data-toggle="offcanvas"]').click(function () {
+        $('#wrapper').toggleClass('toggled');
+  });  
+});
+
+</script>
+  <div class="sidenavdemoBasicUsage header-container"> <!--layout="column"--> 
+
+  <section layout="row" flex="">
+    <md-sidenav class="md-sidenav-left md-whiteframe-z2" md-component-id="left" md-is-locked-open="isLeftOpen()">
+
+      <md-toolbar class="md-theme-indigo">
+        <h1 class="md-toolbar-tools">Sidenav Left</h1>
+      </md-toolbar>
+      <md-content layout-padding="" >
+        <md-button ng-click="close()" class="md-primary" hide-gt-md="">
+          Close Sidenav Left
+        </md-button>
+        <p hide-md="" show-gt-md="">
+          This sidenav is locked open on your device. To go back to the default behavior, narrow your display.
+        </p>
+      </md-content>
+
+    </md-sidenav>
+  <div ng-controller="HeaderController as hdctr" class="header-container-inner" ng-cloak ><!--layout="column"-->
+        <div class="inner"> 
+              <div class="logo pull-left">
+                  <ul class="nav navbar-nav navbar-right navbar-menu" style="float:left;margin-left:0px;">
+                      <li>
+                        <div>
+                            <md-button ng-click="toggleLeft()" class="md-primary">
+                                <i class="fa fa-bars" aria-hidden="true"></i>
+                            </md-button>
+                          </div>
+                      </li>
+                      <li style="float:left;width:30px">
+                          <a style="padding-left: 8px;height: 50px;" class="search-icon"><i class="fa fa-search" aria-hidden="true"></i></a>
+                          <div class="search-field">
+                              <input type="text" class="form-control" />
+                              <i class="fa fa-search" aria-hidden="true"></i>
+                          </div>
+                      </li>
+                  </ul>
+                  <ul class="navbar-nav nav" ng-show="hdctr.global.authenticated">
+                    <li data-ng-repeat="item in hdctr.menu" ng-show="hdctr.global.user" >
+                        <a ui-sref="{{item.link}}">{{item.title}}</a>
+                    </li>
+                  </ul>
+              </div>
+              <div class="right pull-right user-action-button-container">
+                  <ul  class="navbar-nav nav" data-ng-hide="hdctr.global.authenticated">
+                      <li><a ui-sref='auth.register'>Join</a></li>
+                      <li class="divider-vertical"></li>
+                      <li><a ui-sref='auth.login'>Log In</a></li>
+                  </ul>
+                  <ul class="navbar-nav nav" data-ng-show="hdctr.global.authenticated">
+
+                    <li class="dropdown" dropdown on-toggle="toggled(open)">
+                        <a href="#" class="dropdown-toggle" dropdown-toggle>
+                            <span>{{hdctr.global.user.GIVNAME}} {{hdctr.global.user.SURNAME}}</span> <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#" ng-click="hdctr.logout()">Log Out</a></li>
+                        </ul>
+                    </li>
+                  </ul>
+              </div>
+          </div>
+      </div>
