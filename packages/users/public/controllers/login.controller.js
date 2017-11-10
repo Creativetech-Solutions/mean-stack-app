@@ -11,6 +11,7 @@
             //declare internal variables
             var vm = this;
             var baseUrl = 'http://localhost:3000/';
+            var ip = window.ip;
 
             //declare scope variables
             vm.meanuser = MeanUser;
@@ -22,7 +23,7 @@
             //declare logical scope methods controller
             function login(){
               //console.log('login.controller .login');
-              $scope.UserLoginInJava(vm.user)
+              $scope.UserLoginInJava(vm.user);
              // vm.meanuser.login(vm.user);
                 
             }
@@ -30,8 +31,9 @@
 
               var USERNAME  = user.USERNAME;
               var PASSWORD  = user.PASSWORD;
-              var url       = 'http://192.168.1.88:8080/Anerve/anerveWs/AnerveService/loginservice/'+USERNAME+'/'+PASSWORD;
-              var postData  = {USERNAME:USERNAME,PASSWORD:PASSWORD};
+
+              var url       = 'http://'+ip+':8080/Anerve/anerveWs/AnerveService/loginservice/'+USERNAME+'/'+PASSWORD;
+             // var postData  = {USERNAME:USERNAME,PASSWORD:PASSWORD};
               var configObj = { method: 'GET',url: url};
 
                   $http(configObj)
@@ -53,7 +55,7 @@
                                     var configObj2 = { method: 'POST',url: url2, data: postData2};
                                         $http(configObj2)
                                             .then(function onFulfilled(response2) {
-                                              //console.log(response2);
+                                              console.log(response2);
                                               vm.meanuser.login(vm.user);
                                             }).catch( function onRejection(errorResponse2) {
                                                 console.log('Error: ', errorResponse2.status);

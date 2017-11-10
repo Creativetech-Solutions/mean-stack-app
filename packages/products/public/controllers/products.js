@@ -13,9 +13,7 @@ import 'rxjs/add/operator/map';*/
   function productsController($stateParams, $location, Global, products, $state, $scope, $timeout, $http, Session, $mdSidenav, $mdUtil,$sce){
         var vm = this;
         var baseUrl = 'http://localhost:3000/';
-
-        //var ip = '192.168.100.88';
-        var ip = '192.168.1.88';
+        var ip = window.ip;
        //var UploadUrl = 'http://'+ip+':8080/Anerve/images/';
         var UploadUrl = 'http://localhost:3000/products/assets/';
         var ApiBaseUrl = 'http://'+ip+':8080/Anerve/anerveWs/AnerveService/';
@@ -134,7 +132,7 @@ import 'rxjs/add/operator/map';*/
               cvc:this.cvc
             };
              console.log($scope.paymentInformations);
-        }
+        };
      
 
         $scope.showShippingAddressForm = function() {
@@ -183,13 +181,13 @@ import 'rxjs/add/operator/map';*/
 
         $scope.doPayment = function() {
           console.log($scope.shippingInformations);
-          var shippingInformations = $scope.shippingInformations;
-          var paymentInformations = $scope.paymentInformations
-            var totalAmountToPay = $scope.cartTotalPrice;
-                totalAmountToPay = totalAmountToPay.toFixed(2).toString();
-                totalAmountToPay = parseInt(totalAmountToPay.replace('.',''));
+          var shippingInformations  = $scope.shippingInformations;
+          var paymentInformations   = $scope.paymentInformations;
+            var totalAmountToPay    = $scope.cartTotalPrice;
+                totalAmountToPay    = totalAmountToPay.toFixed(2).toString();
+                totalAmountToPay    = parseInt(totalAmountToPay.replace('.',''));
             
-            var Token = '';
+            //var Token = '';
             Stripe.setPublishableKey('pk_test_sZay0UdHi8gZBfIRtvWefcLy');
             /*var checkoutHandler = (window).StripeCheckout.configure({
               key: 'pk_test_sZay0UdHi8gZBfIRtvWefcLy',
@@ -278,7 +276,7 @@ import 'rxjs/add/operator/map';*/
             // See your keys here: https://dashboard.stripe.com/account/apikeys*/
            
         };
-       function stripeResponseHandler(status, response){
+       /*function stripeResponseHandler(status, response){
             var totalAmountToPay = $scope.cartTotalPrice;
                 totalAmountToPay = totalAmountToPay.toFixed(2).toString();
                 totalAmountToPay = parseInt (totalAmountToPay.replace('.',''));
@@ -295,7 +293,7 @@ import 'rxjs/add/operator/map';*/
               amount:  totalAmountToPay,
               token: stripeResponseHandler2
             });
-        }
+        }*/
  
         function stripeResponseHandler2(status, token){
             console.log('stripeResponseHandler2');
@@ -339,7 +337,7 @@ import 'rxjs/add/operator/map';*/
                           console.log(errorResponse);
                   }); 
         }
-        function handleToken(token){
+        /*function handleToken(token){
           console.log(token);
             var url = baseUrl+'api/charge';
 
@@ -369,7 +367,7 @@ import 'rxjs/add/operator/map';*/
                           console.log('Error: ', errorResponse.status);
                           console.log(errorResponse);
                   }); 
-        }
+        }*/
         $scope.showProductDetail = function(productID) {
             console.log('showProductDetail');
             console.log(productID);   
@@ -385,7 +383,7 @@ import 'rxjs/add/operator/map';*/
                 $scope.CurrentUserBuyerDetail = $scope.CurrentUserBuyer(grp_cartId,USERID);
                 $scope.isUserDetailOpen();
               }
-        }
+        };
           
         $scope.showCurrentImage  = function(imageSrc,$event) {   
           console.log(imageSrc);
@@ -814,14 +812,14 @@ import 'rxjs/add/operator/map';*/
             var configObj = { method: 'POST',url: url, data: postData,};
                 $http(configObj)
                     .then(function onFulfilled(response) {
-
+                        console.log(response);
                     }).catch( function onRejection(errorResponse) {
                         console.log('Error: ', errorResponse.status);
                         console.log(errorResponse);
                 }); 
-            var url = ApiBaseUrl+'myfriends/'+key;
-            var postData = {key:key};
-            var configObj = { method: 'GET',url: url, headers: headers};
+            url = ApiBaseUrl+'myfriends/'+key;
+            //postData = {key:key};
+            configObj = { method: 'GET',url: url, headers: headers};
                 $http(configObj)
                     .then(function onFulfilled(response) {
                         var dataJson = JSON.parse(JSON.stringify(response.data));

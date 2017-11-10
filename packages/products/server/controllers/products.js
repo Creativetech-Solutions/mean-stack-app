@@ -14,18 +14,19 @@ var app = express();
 const keyPublishable  = 'pk_test_sZay0UdHi8gZBfIRtvWefcLy';
 const keySecret       = 'sk_test_ta2435vzjD2vjo0eIP9gMPQk';
 
-const stripe = require("stripe")(keySecret);
-const bodyParser = require("body-parser");
+const stripe = require('stripe')(keySecret);
+const bodyParser = require('body-parser');
 
-app.use(express.static("public"));
+app.use(express.static('public'));
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 
         //var baseUrl = 'http://localhost:3000/';
-        //var ip = '192.168.100.88';
-        var ip = '192.168.1.88';
+        var ip = db.sequelize.config.host;
+        console.log('db.ip');
+        console.log(db.sequelize.config.host);
         //var ApiBaseUrl = 'http://'+ip+':8080/Anerve/anerveWs/AnerveService/';
         var ApiBasePath = '/Anerve/anerveWs/AnerveService/';
         var headers = {
@@ -214,10 +215,11 @@ exports.all = function(req, res) {
              //console.log(user);
             productsData['user'] = user; 
             productsData['user_id'] = user.USERID;
-            productsData['grp_cartId'] = user.Grpcart.user_id;
-            productsData['grp_cartId'] = user.Grpcart.user_id;
+            console.log(user.Grpcart);
+            //productsData['grp_cartId'] = user.Grpcart.user_id;
+            //productsData['grp_cartId'] = user.Grpcart.user_id;
             
-            grp_cartId = user.Grpcart.user_id;
+            //grp_cartId = user.Grpcart.user_id;
 
           }
 
@@ -235,15 +237,17 @@ exports.all = function(req, res) {
                 Query += 'ORDER BY b.actiontime DESC';
 
             //productsData['Query'] = Query;
+            //
             db.sequelize.query(Query,{raw: false}).then(grpcart_products => {
                 var productRow = {};
                 //productsData['productRow']= typeof productRow;
-                   grpcart_products[0].forEach(function(row,index) {
+                var TotalCartPrice = 0;
+                   grpcart_products[0].forEach(function(row) {
                          
                            if (row['ProdBrandId'] in productRow){
 
                                 var $key = row['ProdBrandId'];
-                                var $oldRow = productRow[$key]
+                                var $oldRow = productRow[$key];
                                row['qunatity'] = 1 + $oldRow['qunatity'];
                                row['groupCartProductId'] = row['groupCartProductId'];//+','+$oldRow['groupCartProductId'];
 
@@ -301,11 +305,12 @@ exports.all = function(req, res) {
 
 
 exports.createCart = function(req, res) {
+    var RequestUser = req.user;
     var grp_cartId = null;
     var user_id = 0;
-    if (req.user) {
+    if (RequestUser) {
         // logged in
-        user_id = req.user.USERID;
+        user_id = RequestUser.USERID;
         grp_cartId =  localStorage.getItem('grp_cartId_'+user_id);
     } else {
         //not logged in
@@ -313,24 +318,27 @@ exports.createCart = function(req, res) {
     }
     var data = {};
     if(grp_cartId !== undefined && grp_cartId !== null){
-      console.log('!== undefined');
+        console.log('!== undefined');
         data.grp_cartId = grp_cartId;
         data = JSON.stringify(data);
         data = JSON.parse(data);
         return res.json(data);
+
     }else{
           var body = '';
-          var data = [];
+          data = [];
           var url = '';
           var key = '';
-        if (req.user) {
-          console.log('!== key');
+        if (RequestUser) {
 
+          console.log('!== key');
           key = localStorage.getItem('key_'+user_id); 
-          console.log(key);
           url = ApiBasePath+'createCart/'+key+'/';
+          console.log(ApiBasePath+'createCart/'+key+'/');
+
         }else{
-          url = ApiBasePath+'createCart_guest/PK/';
+          
+            url = ApiBasePath+'createCart_guest/PK/';
         }
 
         var options = {
@@ -348,6 +356,8 @@ exports.createCart = function(req, res) {
             });
 
             res2.on('end', function() {
+           
+              console.log(body);
                 data = JSON.parse(body); 
                 console.log(data);
                               /*var cart_items     = data.cart_items;
@@ -364,7 +374,7 @@ exports.createCart = function(req, res) {
                               var createtime     = data.createtime;
                               var current_total  = data.current_total;
                               var currency       = data.currency;*/
-                if (req.user) {
+                if (RequestUser) {
                   localStorage.setItem('grp_cartId_'+user_id,grp_cartId);   
                 }else{
                   localStorage.setItem('grp_cartId',grp_cartId);   
@@ -497,8 +507,8 @@ exports.charge =  function(req, res){
     // Charge the user's card:
     stripe.charges.create({
       amount: amount,
-      currency: "usd",
-      description: "Anerve Shop Friends Shopping Platform",
+      currency: 'usd',
+      description: 'Anerve Shop Friends Shopping Platform',
       source: token,
     }, function(err, charge) {
         console.log(charge);
@@ -575,7 +585,7 @@ exports.getProductBuyingUsers = function(req, res){
     Query += 'GROUP BY (u.USERID) ';
     Query += 'ORDER BY a.grp_cartId DESC';
     grpCartData['Query'] = Query;
-    var TotalCartPrice = 0 ;
+    //var TotalCartPrice = 0 ;
             db.sequelize.query(Query,{raw: false}).then(grpCartDataResponse => {
                 grpCartData['grpCartDataResponse']= grpCartDataResponse[0];
                 return res.jsonp(grpCartData);
@@ -620,6 +630,10 @@ exports.getUserProductDetails = function(req, res){
             });
 
 };
+
+
+
+
 /*SELECT u.USERID, u.GIVNAME ,b.groupCartProductId, b.crt_item 
 FROM groupcart a 
 INNER JOIN group_cart_products b on a.grp_cartId = b.grp_cartId 

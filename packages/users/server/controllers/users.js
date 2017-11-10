@@ -7,6 +7,23 @@ var http = require('http');
 var LocalStorage = require('node-localstorage').LocalStorage,
    localStorage = new LocalStorage('./scratch');
  //console.log('user server controller');
+ //
+
+        //var baseUrl = 'http://localhost:3000/';
+        var ip = db.sequelize.config.host;
+        //var ApiBaseUrl = 'http://'+ip+':8080/Anerve/anerveWs/AnerveService/';
+        var ApiBasePath = '/Anerve/anerveWs/AnerveService/';
+        var headers = {
+                   'Access-Control-Allow-Origin': '*',
+                   'Content-Type' : 'application/json; charset=UTF-8',
+                   'Access-Control-Allow-Headers': 'content-type, Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers',
+                   'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT',
+                   'Access-Control-Max-Age': '3600',
+                   'Access-Control-Allow-Credentials': 'true'
+                };
+
+
+
 /**
  * Auth callback
  */
@@ -47,7 +64,8 @@ exports.login = function(req, res) {
           
           localStorage.setItem('grp_cartId_'+user_id,grp_cartId);   
           localStorage.setItem('current_total_'+grp_cartId,current_total);   
-          localStorage.setItem('currency_'+grp_cartId,currency);   
+          localStorage.setItem('currency_'+grp_cartId,currency);  
+          //UserLoginInJava(req.user);
 
         }
       }).catch(function(err){
@@ -60,6 +78,9 @@ exports.login = function(req, res) {
         redirect: req.get('referer')
     });
 };
+
+
+
 
 /**
  * Show sign up form
@@ -77,9 +98,59 @@ exports.signup = function(req, res) {
  */
 exports.signout = function(req, res) {
    localStorage.removeItem('grp_cartId');
-    console.log('Logout: { USERID: ' + req.user.USERID + ', USERNAME: ' + req.user.USERNAME + '}');
-    req.logout();
-    res.redirect('/');
+
+
+    var url   = '';
+    var body  = '';
+    var data  = [];
+    var key   = '';
+    var user_id = 0;
+
+    if (req.user) {
+          user_id = req.user.USERID;
+          key = localStorage.getItem('key_'+user_id); 
+          url = ApiBasePath+'logout/'+key+'/';
+          console.log(key);
+          console.log(user_id);
+          console.log(url);
+
+      var options = {
+          hostname: ip,
+          port: '8080',
+          path: url,
+          method: 'GET',
+          headers: headers
+      };
+
+      var req3 = http.request(options,function(res2){
+
+          res2.on('data', function(chunk) {
+               body += chunk;
+          });
+
+          res2.on('end', function() { 
+              console.log(body);
+              
+              console.log('Logout: { USERID: ' + user_id +'}');
+              req.logout();
+              res.redirect('/');
+          });
+      });
+      
+      req3.on('error', function(e){
+        console.log('problem with request:'+ e.message);
+      });
+
+      req3.end();
+
+    }else{
+          console.log('already logout from java server now logging out from mean');
+          console.log('Logout: { USERID: ' + req.user.USERID + '}');
+          req.logout();
+          res.redirect('/');
+    }
+
+    
 };
 
 /**

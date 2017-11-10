@@ -20,13 +20,14 @@ module.exports = function(sequelize, DataTypes,models) {
 			createtime: DataTypes.DATE,
 			owner_userId: {
 			    type: DataTypes.INTEGER(11),
-			    references:{ model: "User", key: "USERID" } 
+			    references:{ model: 'User', key: 'USERID' } 
 			  },
 			privacy: DataTypes.STRING
 		},
 		{
 			tableName: 'groupcart',
 			associate: function(models) {
+				console.log(models);
 				//Grpcart.belongsTo(models.User);
 			}
 		}		

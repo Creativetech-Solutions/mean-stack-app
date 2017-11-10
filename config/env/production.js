@@ -29,8 +29,8 @@ module.exports = {
     },
     google: {
         realm: 'http://localhost:3000/',
-        clientID: '594893509074-9gtvkl1qo1e369cuhd4be8vo00ta581e.apps.googleusercontent.com',
-        clientSecret: 'xGdqMahlXGDYJFBH16bEl4_A',
+        clientID: '972158488032-4ovojau9eipa5voof0aaoh1qv0v0k0tt.apps.googleusercontent.com',
+        clientSecret: 'C2zw8rtG4jDBM0LDQrlauGyr',
         callbackURL: 'http://localhost:3000/api/auth/google/callback'
     }
 };

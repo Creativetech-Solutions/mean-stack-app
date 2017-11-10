@@ -53,6 +53,7 @@ app.get('/api/auth/facebook/callback', passport.authenticate('facebook', {
 
 // Setting the twitter oauth routes
 app.get('/api/auth/twitter', passport.authenticate('twitter', {
+    scope:['include_email=true'],
     failureRedirect: '/signin'
 }), users.signin);
 
