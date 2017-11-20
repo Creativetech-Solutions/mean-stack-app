@@ -5,8 +5,12 @@ We used MySql, Express, AngularJs and Node Js
 
 ### Used Passport Js
 - Simple Login & Registrations
-- Social Login & Social Registrations
-
+- Social Login & Social Registrations (Made 4 Strategies)
+  * Local Strategy
+  * Google Strategy
+  * Twitter Strategy
+  * Facebook Strategy
+  
 ### Used Sequelize Js (Sequelize is a promise-based ORM for Node.js v4)
 - Connected MySql DB 
 

@@ -2,7 +2,7 @@
     "db": "mongodb://localhost/mean-travis",
     "port": 3001,
     "app": {
-        "name": "MEAN - A Modern Stack - Test on travis"
+        "name": "M*EAN - A Modern Stack: MySQL, ExpressJS, AngularJS, NodeJS. (BONUS: Passport User Support). - Test on travis"
     },
     "facebook": {
         "clientID": "824770854361592",
