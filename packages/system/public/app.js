@@ -1,5 +1,5 @@
 'use strict';
-angular.module('mean', [
+var mean = angular.module('mean', [
   /* angular modules */
   'ngCookies',
   'ngResource',
@@ -20,39 +20,65 @@ angular.module('mean', [
   'mean.system',
   'mean.products',
   'mean.users'
-]).directive('sidenavPushIn',sidenavPushIn)
-.directive('mAppLoading',mAppLoading)
-.config(['$qProvider', function ($qProvider) {
+]).directive('sidenavPushIn',sidenavPushIn);
+
+//mean.directive('mAppLoading',mAppLoading);
+//mean.directive('myFrame',myFrame);
+mean.config(['$qProvider', function ($qProvider) {
         $qProvider.errorOnUnhandledRejections(false);
-}]).controller('AnerveCtrl', AnerveCtrl);
-
-       AnerveCtrl.$inject = [];
-
-  function AnerveCtrl() {
-      var vm = this;
-      setTimeout(
-            function asyncBootstrap() {
-                angular.bootstrap( document, [ "mean" ] );
-            },
-            ( 2 * 1000 )
-        );
-  }
-window.ip = '192.168.1.88';
-//window.ip = '192.168.100.88';  
+}]);
 
 
+//window.ip = '192.168.1.88';
+window.ip = '192.168.100.88';  
+var baseUrl = 'http://localhost:3000/';
+var ApiBaseUrl = 'http://'+window.ip+':8080/Anerve/anerveWs/AnerveService/';
+var UploadUrl = baseUrl+'products/assets/';
+ var headers = {
+                   'Access-Control-Allow-Origin': '*',
+                   'Content-Type' : 'application/json; charset=UTF-8',
+                   'Access-Control-Allow-Headers': 'content-type, Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers',
+                   'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT',
+                   'Access-Control-Max-Age': '3600',
+                   'Access-Control-Allow-Credentials': 'true'
+                };
+   /* setTimeout(
+      function asyncBootstrap() {
+        angular.bootstrap( document, [ 'mean' ] );
+        console.log('asyncBootstrap');
+      },
+      ( 5000 )
+    );*/
 
 angular.module('mean.system', []);
 angular.module('mean.products', []);
 angular.module('mean.users',[]);
 
+function myFrame(){
+    return {
+        restrict: 'E',
+        templateUrl:"system/views/frame.html",
+        controller:function($scope){
+          $scope.hidden=false;
+          $scope.close=function(){
+            $scope.hidden=true;
+            
+          }
+        },
+        transclude:false
+
+
+    }
+
+}
 
 function mAppLoading($animate){
 
                 // Return the directive configuration.
                 return({
                     link: link,
-                    restrict: "C"
+                    transclude:false,
+                    restrict: "E"
                 });
                 // I bind the JavaScript events to the scope.
                 function link( scope, element, attributes ) {

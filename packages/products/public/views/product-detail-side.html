@@ -34,24 +34,24 @@
 	</div>
 	<div class="cost-price">
 		<div class="price-detail">
-			<span class="price">{{CurrentProductDetail.cost_price}}</span>
+			<span class="price">{{CurrentProductDetail.buy_now_price}}</span>
 			<span class="price-currency">{{CurrentProductDetail.currency}}</span>
 		</div>
 	</div>
 	<div class="buttons">
-		<div class="btn btn-add-to-cart">
+		<div class="btn btn-add-to-cart" ng-click="addToCartBtn(CurrentProductDetail.ProdBrandId,CurrentProductDetailImage)">
 			add to cart
 		</div>
 		<div class="btn btn-buy-now">
 			buy now
 		</div>
-	</div>
+	</div> 
 	<div class="product-owners" data-ng-if="CurrentProductDetail.buyingUser">
 		<p>People who owns this product</p>
 		<ul>
 			<li data-ng-repeat="users in CurrentProductDetail.buyingUser">
 				<div ng-click="showUserCart(users.grp_cartId,users.USERID); UserDetail()">
-					<img src="{{UploadUrl}}{{users.img_loc}}" alt="owners"/>
+					<img class="user-image" src="{{UploadUrl}}{{users.img_loc}}" alt="owners"/>
 				</div>
 			</li>
 		</ul>

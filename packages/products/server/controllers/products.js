@@ -155,6 +155,7 @@ exports.show = function(req, res) {
  * List of products
  */
 exports.all = function(req, res) {
+    var productsData = {};
     var grp_cartId = 0;
     var user_id = 0;
     if (req.user) {
@@ -172,7 +173,6 @@ exports.all = function(req, res) {
         status : 'A'
       }
     }).then(function(product){
-        var productsData = {};
         var col1 = [];
         var col2 = [];
         var col3 = [];
@@ -216,20 +216,35 @@ exports.all = function(req, res) {
             productsData['user'] = user; 
             productsData['user_id'] = user.USERID;
             console.log(user.Grpcart);
-            //productsData['grp_cartId'] = user.Grpcart.user_id;
-            //productsData['grp_cartId'] = user.Grpcart.user_id;
-            
-            //grp_cartId = user.Grpcart.user_id;
-
           }
 
 
         if(grp_cartId !== undefined && grp_cartId !== null){
 
+
+            // get cart users
+            var Query1=  'SELECT u.USERID, u.GIVNAME, u.SURNAME, u.img_loc, u.USERNAME';
+                          Query1 += ' FROM users u, group_cart_users gu';
+                          Query1 += ' WHERE gu.grp_cartId = '+grp_cartId;
+                          Query1 += ' AND gu.userid = u.USERID AND gu.action = 2 ';
+                          Query1 += 'ORDER BY gu.actiontime DESC';
+            db.sequelize.query(Query1,{raw: false}).then(grpcart_users => {
+                if(typeof grpcart_users[0] != 'undefined' && grpcart_users[0] != null){
+                  grpcart_users[0].forEach(function(val, key) {
+                    grpcart_users[0][key]['userid'] = val['USERID'];
+                  });
+                }
+                productsData['friendsInCart'] = grpcart_users[0];
+
+            }).catch(function(err){
+                    productsData['errors'] = 'Sorry Error Found '+err;
+            });
+
+
             productsData['user_id'] = user_id;
             productsData['grp_cartId'] = grp_cartId;
 
-            var Query =  'SELECT a.ProdBrandId,a.name, a.cost_price, a.specs, a.img_loc, b.groupCartProductId ';
+            var Query =  'SELECT a.ProdBrandId,a.name, a.cost_price, a.buy_now_price, a.specs, a.img_loc, b.groupCartProductId ';
                 Query += 'FROM productbrands a, group_cart_products b, grpcart_products c ';
                 Query += 'WHERE a.prodbrandId = b.crt_item ';
                 Query += 'AND b.groupCartProductId = c.groupCartProductId ';
@@ -263,7 +278,8 @@ exports.all = function(req, res) {
                                 //productRow.push( row );
 
                            }
-                            TotalCartPrice  = TotalCartPrice + row['cost_price'];
+                            //TotalCartPrice  = TotalCartPrice + row['cost_price'];
+                            TotalCartPrice  = TotalCartPrice + row['buy_now_price'];
                     });
                 productsData['TotalCartPrice']= TotalCartPrice;
                 productsData['products_cart']= productRow;
@@ -278,15 +294,6 @@ exports.all = function(req, res) {
                     return res.jsonp(productsData);
             });
             
-            /*db.grp_cart.find({ where: {grp_cartId: grp_cartId}}).then(function(grp_cart){
-                if(!grp_cart) {
-                    productsData.push({'errors':'Sorry No Cart Found '+grp_cartId});
-                } else {
-                   productsData.push({'cartData':grp_cart});
-                }
-            }).catch(function(err){
-                    productsData.push({'errors':'Sorry Error Found '+err});
-            });*/
         }else{
             return res.jsonp(productsData);
         }
@@ -439,6 +446,97 @@ exports.addToCart = function(req, res) {
     req.end();
 };
 
+// add user to cart
+exports.addUserToCart = function(req, res){
+    var cartID    = req.body.cartID;
+    var userId = req.body.userId;
+
+    
+    var url = '';
+    //addToCart_guest_thin
+    var body = '';
+    var data = [];
+
+    var key = '';
+    var user_id = 0;
+    if (req.user) {
+      user_id = req.user.USERID;
+      key = localStorage.getItem('key_'+user_id); 
+      url = ApiBasePath+'addUserToCart/'+key+'/'+cartID+'/'+userId+'/';
+    }
+    var options = {
+        hostname: ip,
+        port: '8080',
+        path: url,
+        method: 'GET',
+        headers: headers
+    };
+
+    req = http.request(options,function(res2){
+
+        res2.on('data', function(chunk) {
+             body += chunk;
+        });
+
+        res2.on('end', function() { 
+            console.log(body);
+           // data = JSON.stringify(body);
+            data = JSON.parse(body);  
+            return res.jsonp(data);
+        });
+    });
+
+    req.on('error', function(e){
+        console.log('problem with request:'+ e.message);
+    });
+
+    req.end();
+}
+
+
+// remove user from cart 
+exports.removeUserFromCart = function(req, res){
+   var cartID = req.body.cartID;
+    var userId = req.body.userId;
+    var url = '';var key = '';
+    var body = '';
+    var data = [];
+    var user_id = 0;
+    if (req.user) {
+      user_id = req.user.USERID;
+      key = localStorage.getItem('key_'+user_id); 
+      url = ApiBasePath+'bootUserfromCart/'+key+'/'+cartID+'/'+userId+'/';
+      console.log(url);
+    }
+    var options = {
+        hostname: ip,
+        port: '8080',
+        path: url,
+        method: 'GET',
+        headers: headers
+    };
+    req = http.request(options,function(res2){
+
+        res2.on('data', function(chunk) {
+             body += chunk;
+        });
+
+        res2.on('end', function() { 
+           // console.log(body);
+            //data = JSON.stringify(body);
+           // console.log(data);
+            data = JSON.parse(body);  
+            //console.log(body);
+            return res.jsonp(data);
+        });
+    });
+
+    req.on('error', function(e){
+        console.log('problem with request:'+ e.message);
+    });
+
+    req.end();  
+}
 
 /**
  * Get Group Cart
@@ -496,6 +594,7 @@ exports.nl_removefromCart = function(req, res) {
 
     req.end();
 };
+
 /**
  * Do Charge
  */
@@ -551,7 +650,7 @@ exports.myfriends =  function(req, res){
     var options = {
         hostname: ip,
         port: '8080',
-        path: ApiBasePath+'myfriends/'+key+'/',
+        path: ApiBasePath+'myfriends_mini/'+key+'/',
         method: 'GET',
         headers: headers
     };
@@ -594,26 +693,30 @@ exports.getProductBuyingUsers = function(req, res){
 };
 
 exports.getUserDetail = function(req, res){
+  if (req.user) {
+    var current_user_id = req.user.USERID;
     var USERID     = req.body.USERID;
-    var grp_cartId = req.body.grp_cartId;
+    var grp_cartId = null;
+    if(req.body.grp_cartId != null && req.body.grp_cartId != undefined){
+	    grp_cartId = req.body.grp_cartId;
+	  }
 
-    var Query = 'SELECT u.USERID, u.GIVNAME, u.SURNAME, u.user_img, u.img_loc, u.img_loc1, u.img_loc2 ';
-    Query += ',b.groupCartProductId, b.crt_item ';
-    Query += 'FROM groupcart a ';
-    Query += 'INNER JOIN group_cart_products b on a.grp_cartId = b.grp_cartId ';
-    Query += 'INNER JOIN productbrands p on b.crt_item = p.ProdBrandId ';
-    Query += 'INNER JOIN users u on u.USERID = b.crt_addedby_user ';
-    Query += 'where b.crt_addedby_user = '+USERID+' AND a.grp_cartId = '+grp_cartId+' AND a.STATUS IN ("I","A") ';
-    Query += 'ORDER BY a.grp_cartId DESC';
+    var Query = 'SELECT u.USERID, u.GIVNAME, u.SURNAME, u.user_img, u.img_loc, u.img_loc1, u.img_loc2, uf.action, uf.my_userid ';
+    Query += 'FROM users u LEFT JOIN user_followers uf ON ((uf.follow_userid = u.USERID AND uf.`my_userid` = '+current_user_id+') OR (uf.my_userid = u.USERID AND uf.`follow_userid` = '+current_user_id+')) ';
+    Query += 'WHERE u.USERID = '+USERID+'  ';
 
-            db.sequelize.query(Query,{raw: false}).then(grpCartDataResponse => {
-                return res.jsonp(grpCartDataResponse[0][0]);
-            });
+    db.sequelize.query(Query,{raw: false}).then(grpCartDataResponse => {
+        return res.jsonp(grpCartDataResponse[0][0]);
+    });
+  }
 
 };
 exports.getUserProductDetails = function(req, res){
     var USERID     = req.body.USERID;
-    var grp_cartId = req.body.grp_cartId;
+    var grp_cartId = null;
+    if(req.body.grp_cartId != null && req.body.grp_cartId != undefined){
+	    grp_cartId = req.body.grp_cartId;
+	}
 
     var Query = 'SELECT p.ProdBrandId, p.name, p.cost_price, p.currency, p.specs, p.location, p.img_loc, p.img1, ';
     Query += 'p.short_name, p.brand_name, p.brand_logo';
@@ -622,8 +725,12 @@ exports.getUserProductDetails = function(req, res){
     Query += 'INNER JOIN group_cart_products b on a.grp_cartId = b.grp_cartId ';
     Query += 'INNER JOIN productbrands p on b.crt_item = p.ProdBrandId ';
     Query += 'INNER JOIN users u on u.USERID = b.crt_addedby_user ';
-    Query += 'where b.crt_addedby_user = '+USERID+' AND a.grp_cartId = '+grp_cartId+' AND a.STATUS IN ("I","A") ';
-    Query += 'ORDER BY a.grp_cartId DESC';
+    if(req.body.grp_cartId != null && req.body.grp_cartId != undefined){
+	    Query += 'where b.crt_addedby_user = '+USERID+' AND a.grp_cartId = '+grp_cartId+' AND a.STATUS IN ("I","A") ';
+	    Query += 'ORDER BY a.grp_cartId DESC';
+	}else{
+	    Query += 'where b.crt_addedby_user = '+USERID+' AND a.STATUS IN ("I","A") ';
+	}
 
             db.sequelize.query(Query,{raw: false}).then(grpCartDataResponse => {
                 return res.jsonp(grpCartDataResponse[0]);
@@ -631,8 +738,73 @@ exports.getUserProductDetails = function(req, res){
 
 };
 
+// get user cart details
+exports.getUserCartDetail = function(req, res){
+  var data = {};
+    if (req.user) {
+      var current_user_id = req.user.USERID;
+      var USERID     = req.body.USERID;
+      // first get Cart Id,
+      var Query = "SELECT gu.grp_cartId FROM group_cart_users gu WHERE gu.userid = "+USERID+" AND gu.userRole = 'O' ORDER BY gu.`groupCartuserId` DESC LIMIT 1";
+      console.log('Query is '+Query);
+      db.sequelize.query(Query,{raw: false}).then(result => {
+        if(typeof result[0][0] != 'undefined' && result[0][0]['grp_cartId'] != null){
+            var userCartId = result[0][0]['grp_cartId'];
+            data['cartId'] = userCartId;
+            // get cart owner
+            Query = 'SELECT u.USERID, u.GIVNAME, u.SURNAME, u.user_img, u.img_loc, u.img_loc1, u.img_loc2, uf.action, uf.my_userid ';
+              Query += 'FROM users u LEFT JOIN user_followers uf ON ((uf.follow_userid = u.USERID AND uf.`my_userid` = '+current_user_id+') OR (uf.my_userid = u.USERID AND uf.`follow_userid` = '+current_user_id+')) ';
+              Query += 'WHERE u.USERID = '+USERID;
+
+              db.sequelize.query(Query,{raw: false}).then(cartOwner => {
+                  data['cartOwner'] = cartOwner[0][0];
+              });
+
+            //get cart users
+            Query = 'SELECT u.USERID, u.GIVNAME, u.SURNAME, u.user_img, u.img_loc FROM users u '+
+            'INNER JOIN group_cart_users gu ON gu.userid = u.USERID WHERE gu.userRole = "m" AND gu.grp_cartId = '+userCartId+' AND gu.action = 1 GROUP BY u.USERID';
+
+            db.sequelize.query(Query,{raw: false}).then(cartUsers => {
+                  data['cartUsers'] = cartUsers[0];
+              });
+
+            // get cart comments 
+            Query = 'SELECT u.USERID, u.GIVNAME, u.SURNAME, u.img_loc, c.chat_text, c.chattime FROM group_cart_chats c '+
+            'INNER JOIN users u ON u.USERID = c.byUser WHERE c.grp_cartId = '+userCartId+
+            ' AND c.action = 1 ORDER BY c.chattime ASC';
+
+            db.sequelize.query(Query,{raw: false}).then(cartComments => {
+                  data['cartComments'] = cartComments[0];
+              });
+            // get cartProducts
+            Query = 'SELECT p.ProdBrandId, p.name, p.cost_price, p.currency, p.specs, p.location, p.img_loc, p.img1, '+
+            'p.short_name, p.brand_name, p.brand_logo '+
+            'FROM productbrands p INNER JOIN group_cart_products gp ON p.ProdBrandId = gp.crt_item '+
+            'WHERE gp.grp_cartId = '+userCartId+' GROUP BY p.ProdBrandId';
+
+            db.sequelize.query(Query,{raw: false}).then(cartProducts => {
+                  data['cartProducts'] = cartProducts[0];
+                  return res.jsonp(data);
+              });
 
 
+        }
+      });
+    }
+}
+
+// add comment to cart
+exports.addCommentToCart = function(req, res){
+   if (req.user) {
+    var comment = req.body.comment;
+    var Query = "INSERT INTO group_cart_chats(grp_cartId, byUser, chattime, chat_text) VALUES "+
+     "('"+comment.grp_cartId+"','"+comment.byUser+"','"+comment.chattime+"','"+comment.chat_text+"')";
+
+    db.sequelize.query(Query,{raw: false}).then(response => {
+          return res.jsonp(response);
+      });
+  }
+}
 
 /*SELECT u.USERID, u.GIVNAME ,b.groupCartProductId, b.crt_item 
 FROM groupcart a 

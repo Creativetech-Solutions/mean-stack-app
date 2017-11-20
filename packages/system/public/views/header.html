@@ -1,4 +1,7 @@
-<div class="m-app-loading" ng-animate-children>
+
+    <!--my-frame>
+        <span>My Frame content</span>
+    </my-frame-->
 <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 <script type="text/javascript" charset="utf-8">
   $(document).ready(function () {
@@ -81,7 +84,18 @@
                       <li><a ui-sref='auth.login'>Log In</a></li>
                   </ul>
                   <ul class="navbar-nav nav" data-ng-show="hdctr.global.authenticated">
-
+                    <li class="dropdown notify" dropdown on-toggle="toggled(open)">
+                        <a href="#" class="dropdown-toggle" dropdown-toggle>
+                            <span>Notifications</span> <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu" style="max-height: 250px;width: 200px;overflow-y:scroll;">
+                            <li class="usr-img col-md-12" ng-repeat="request in requests track by $index">
+                              <div class="icon" title="{{request.givname+' '+request.surname}}"><img src="{{UploadUrl+getDefaultAvatar(request.imgloc)}}" /></div>
+                              <div class="msg"> Friend Request <a class="btn btn-primary btn-xs" ng-click="acceptRequest(request.userId,$index)">Accept</a></div>
+                            </li>
+                            <li class="usr-img col-md-12" ng-show = "!requests.length">No More Requests</li>
+                        </ul>
+                    </li>
                     <li class="dropdown" dropdown on-toggle="toggled(open)">
                         <a href="#" class="dropdown-toggle" dropdown-toggle>
                             <span>{{hdctr.global.user.GIVNAME}} {{hdctr.global.user.SURNAME}}</span> <b class="caret"></b>
